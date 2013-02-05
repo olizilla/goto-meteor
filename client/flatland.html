@@ -1,0 +1,23 @@
+<head>
+  <title>flatland</title>
+  <!-- <link href='http://fonts.googleapis.com/css?family=Amatic+SC' rel='stylesheet' type='text/css'> -->
+</head>
+
+<body>
+  {{> hello}}
+</body>
+
+<template name="hello">
+  <h1>{{greeting}}</h1>
+  <div>
+  	{{#if avatarUrl}}
+  	<img src="{{avatarUrl}}">
+  	{{/if}}
+  </div>
+  <form>
+  	<input class="email" type="email" placeholder="your@email.here" required />
+    <a href="#" class="btn btn-primary save">Go</a>
+  </form>
+</template>
+
+
