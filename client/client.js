@@ -28,7 +28,6 @@ Template.hello.greeting = function () {
   return Session.get('greeting');
 };
 
-// Template.hello.avatarUrl = 'foo.png';
 Template.hello.avatarUrl = function(){
   var player = Players.findOne(Session.get('playerId'));
   if (!player){
@@ -58,6 +57,6 @@ function getCurrentUser() {
 }
 
 function toAvatarUrl(email) {
-  hash = $.md5(avatarUrl);
-  return 'http://www.gravatar.com/avatar/' + emailHash;
+  hash = $.md5(email);
+  return 'http://www.gravatar.com/avatar/' + hash;
 }
