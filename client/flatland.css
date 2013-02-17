@@ -3,3 +3,30 @@ body{
 	font-family: "Amatic SC",Futura,Helvetica,arial,freesans,clean,sans-serif;
     color: #222;
 }
+html {
+	background-color:#faf0e6;
+}
+body {
+	min-width: 870px;
+}
+/* Awesome full height div without js */
+html, body {
+	height: 100%;
+}
+.navbar .gravatar{
+	width:40px;
+	height:40px;
+}
+#map {
+	height:100%;
+	width:100%;
+}
+#map .olControlZoom{
+	top:50px;
+}
+#map .olControlZoom a {
+	background: rgba(0,0,0,0.5);
+}
+#map .olControlZoom a:hover {
+	background: rgba(0,0,0,0.9);
+}
