@@ -1,68 +1,96 @@
-/**
- * Every session gets a session id
- * Mutiple sessions can have the same email address
- *
- * Show all users position on the map as avatar.
- */
+/*
+Scenarios
+- First time this browser/user combo has gone to the site.
+*/
 
+var map;
+
+function initMap() {
+
+	map = L.map('map').setView([51.505, -0.09], 12);
+
+	L.tileLayer("http://{s}tile.stamen.com/toner/{z}/{x}/{y}.png", {
+		"minZoom":      0,
+		"maxZoom":      20,
+		"subdomains":   ["", "a.", "b.", "c.", "d."],
+		"scheme":       "xyz"
+	}).addTo(map);
+
+	return map;
+}
+
+function retrieveOrCreatePlayerId(){
+
+	var playerId = window.localStorage['playerId'];
+	
+	// Never seen you before
+	if (!playerId){
+		playerId = Players.insert({});
+		window.localStorage['playerId'] = playerId;
+	} else {
+		// Are you in the db yet?
+		var player = Players.findOne(playerId);
+		if (!player){
+			console.log('No player found, db probably got wiped, recreating now.');
+			Players.insert({ _id: playerId });
+		}
+	}
+
+	Session.set('playerId', playerId);
+
+	console.log('Player', playerId);
+}
+
+/*
+ * Meteor.startup "will run as soon as the DOM is ready and any <body> templates from your .html files have been put on the screen."
+ * http://docs.meteor.com/#meteor_startup
+ */
 Meteor.startup(function () {
 
-	var retrieveOfCreatePlayerId = function(){
-
-		var playerId = window.localStorage['playerId'];
-
-		// You're not from round here...
-		if (!playerId){
-			playerId = Players.insert({});
-			window.localStorage['playerId'] = playerId;
-		}
-
-		console.log('playerId: ', playerId);
-
-		Session.set('playerId', playerId);
-
-		console.log('startup player:', getCurrentUser());
-	};
-
-	// Do it.
-	retrieveOfCreatePlayerId();
+	retrieveOrCreatePlayerId();
 
 	initMap();
 
 	getCurrentPosition();
 
+	// Run a function and rerun it whenever its dependencies change.
 	Meteor.autorun(function(){
-//	var longitude = Session.get('longitude');
-//	var latitude = Session.get('latitude');
-//	var zoom = Session.get('zoom');
 
-		// console.log('startup autorun called', player);
+		console.log('Startup autorun');
 
 		Players.find().forEach(function(player){
+			
+			console.log(player);
+
 			if (!player || !player.position || !map){
-			return false;
+				return false;
 			}
+
 			var longitude = player.position.coords.longitude;
 			var latitude = player.position.coords.latitude;
-			var zoom = player.position.zoom;
 
-			var pos = lonlat(longitude, latitude);
+			if (!latitude || !longitude){
+				return false;
+			}
 
-			// map.panTo(point);
-			// map.zoomTo(zoom);
+			var latLng = [latitude, longitude];
 
-			var pointFeature = createPoint(pos);
-			pointFeature.attributes.gravatar = gravatarUrl(player.emailHash);
+			L.marker(latLng, {
+				icon: L.icon({
+					iconUrl: gravatarUrl(player.emailHash),
+					iconSize:[40, 40]
 
-			console.log(positionsLayer, pointFeature);
-			positionsLayer.addFeatures( [pointFeature] );
+				})
+			}).addTo(map);
+
+			if (player._id === getCurrentUser()._id) {
+				map.panTo(latLng);
+			}
 		});
-
-		// var player = Players.findOne(Session.get('playerId'));
-
 	});
 });
 
+// Try and get a gravatar Url
 Template.gravatar.url = function(){
 	var player = Players.findOne(Session.get('playerId'));
 	
@@ -75,6 +103,7 @@ Template.gravatar.url = function(){
 	return gravatarUrl(player.emailHash);
 };
 
+// Hash the email and store the result
 Template.gravatar.events({
 
 	'click .save' : function (event, template) {
@@ -83,7 +112,7 @@ Template.gravatar.events({
 
 		if (email && email !== ''){
 			var hash = $.md5(email);
-			Players.update(Session.get('playerId'), {$set: { emailHash: hash }});
+			Players.update(Session.get('playerId'), { $set: { emailHash: hash }});
 		}
 
 		console.log(Players.findOne(Session.get('playerId')));
@@ -95,77 +124,21 @@ function getCurrentUser() {
 }
 
 function gravatarUrl(hash) {
-	return 'http://www.gravatar.com/avatar/' + hash;
-}
-
-var map;
-var positionsLayer;
-
-function initMap() {
-
-	map = new OpenLayers.Map({});
-
-	var gmap = new OpenLayers.Layer.Google("Google Streets");
-
-	var ships = new OpenLayers.Layer.Vector();
-
-	map.addLayers([gmap]);
-
-	map.zoomToMaxExtent();
-
-	// map.panTo(lonlat(-40, 46));
-
-	map.render('map');
-
-	addVectorLayer('peas');
-
-	return map;
-}
-
-function lonlat(lon, lat) {
-
-	var epsg4326 = new OpenLayers.Projection("EPSG:4326");
-
-	var epsg900913 = new OpenLayers.Projection("EPSG:900913");
-
-	var point =  new OpenLayers.LonLat(lon, lat).transform(epsg4326, epsg900913);
-
-	return point;
+	return 'http://www.gravatar.com/avatar/' + hash + '?d=mm';
 }
 
 function getCurrentPosition(){
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(function(pos){
+			console.log('Current Position', pos);
 
-			var clonePos = $.extend(true, {}, pos); // Fix FF error 'Cannot modify properties of a WrappedNative'
-			clonePos.zoom = 11;
-			Players.update(Session.get('playerId'), {$set: { position: clonePos }});
+			pos = $.extend(true, {}, pos); // Fix FF error 'Cannot modify properties of a WrappedNative'
+			Players.update(Session.get('playerId'), {$set: { position: pos }, $push: {route: pos } });
 
 		}, error);
 	} else {
 		error('not supported');
 	}
-}
-
-function addVectorLayer(name){
-
-	positionsLayer = new OpenLayers.Layer.Vector(name, {
-		projection: new OpenLayers.Projection('EPSG:4326'),
-		styleMap: new OpenLayers.StyleMap({
-			graphicWidth: 40,
-			graphicHeight: 40,
-			externalGraphic: '${gravatar}'
-		})
-	});
-
-	map.addLayer(positionsLayer);
-}
-
-function createPoint(coords){
-
-	var point = new OpenLayers.Geometry.Point(coords.lon, coords.lat);
-    var pointFeature = new OpenLayers.Feature.Vector(point);
-    return pointFeature;
 }
 
 function error(msg) {

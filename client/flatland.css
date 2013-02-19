@@ -21,12 +21,12 @@ html, body {
 	height:100%;
 	width:100%;
 }
-#map .olControlZoom{
-	top:50px;
+#map .leaflet-control-zoom{
+	margin-top: 50px;
 }
-#map .olControlZoom a {
-	background: rgba(0,0,0,0.5);
-}
-#map .olControlZoom a:hover {
-	background: rgba(0,0,0,0.9);
+#map .leaflet-marker-icon{
+	  -webkit-transform: rotateX( 45deg );
+         -moz-transform: rotateX( 45deg );
+           -o-transform: rotateX( 45deg );
+              transform: rotateX( 45deg );
 }
