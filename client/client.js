@@ -51,7 +51,7 @@ Meteor.startup(function () {
 
 	initMap();
 
-	getCurrentPosition();
+	startWatchingGeolocation();
 
 	// Run a function and rerun it whenever its dependencies change.
 	Meteor.autorun(function(){
@@ -127,17 +127,17 @@ function gravatarUrl(hash) {
 	return 'http://www.gravatar.com/avatar/' + hash + '?d=mm';
 }
 
-function getCurrentPosition(){
+function startWatchingGeolocation(){
 	if (navigator.geolocation) {
-		navigator.geolocation.getCurrentPosition(function(pos){
+		navigator.geolocation.watchPosition(function(pos){
 			console.log('Current Position', pos);
 
 			pos = $.extend(true, {}, pos); // Fix FF error 'Cannot modify properties of a WrappedNative'
 			Players.update(Session.get('playerId'), {$set: { position: pos }, $push: {route: pos } });
 
-		}, error);
+		}, error, {enableHighAccuracy:true, maximumAge:5000, timeout:10000});
 	} else {
-		error('not supported');
+		error('geolocation not supported');
 	}
 }
 
