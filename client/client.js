@@ -5,6 +5,13 @@ Scenarios
 
 var map;
 
+var markers = new Meteor.Collection("markers"); // a client side record of all the markers on the map, keyed by playerId
+
+markers.find().observe({
+	removed:function(doc){ map.removeLayer(doc.marker); },
+	added:function(doc){ doc.marker.addTo(map); }
+});
+
 function initMap() {
 
 	map = L.map('map').setView([51.505, -0.09], 12);
@@ -17,6 +24,28 @@ function initMap() {
 	}).addTo(map);
 
 	return map;
+}
+
+function createMapMarker(coords, iconUrl){
+	
+	console.log(arguments);
+	
+	var longitude = coords.longitude;
+	var latitude = coords.latitude;
+
+	if (!latitude || !longitude){
+		return false;
+	}
+
+	var latLng = [latitude, longitude];
+
+	return L.marker(latLng, {
+		icon: L.icon({
+			iconUrl: iconUrl,
+			iconSize:[40, 40]
+
+		})
+	});
 }
 
 function retrieveOrCreatePlayerId(){
@@ -58,33 +87,24 @@ Meteor.startup(function () {
 
 		console.log('Startup autorun');
 
+		markers.remove({}); // Kill them all
+
 		Players.find().forEach(function(player){
 			
 			console.log(player);
 
-			if (!player || !player.position || !map){
+			if (!player || !player.position || !player.position.coords || !player.position.coords.latitude || !map){
 				return false;
 			}
 
-			var longitude = player.position.coords.longitude;
-			var latitude = player.position.coords.latitude;
+			var coords = player.position.coords;
 
-			if (!latitude || !longitude){
-				return false;
-			}
+			var marker = createMapMarker(coords, gravatarUrl(player.emailHash));
 
-			var latLng = [latitude, longitude];
-
-			L.marker(latLng, {
-				icon: L.icon({
-					iconUrl: gravatarUrl(player.emailHash),
-					iconSize:[40, 40]
-
-				})
-			}).addTo(map);
+			markers.insert({_id: player._id, marker: marker});
 
 			if (player._id === getCurrentUser()._id) {
-				map.panTo(latLng);
+				map.panTo([coords.latitude, coords.longitude]);
 			}
 		});
 	});
@@ -133,6 +153,11 @@ function startWatchingGeolocation(){
 			console.log('Current Position', pos);
 
 			pos = $.extend(true, {}, pos); // Fix FF error 'Cannot modify properties of a WrappedNative'
+
+			if (!pos.coords.latitude || pos.coords.longitude){
+				return; // we don't want yer lousy geolocation anyway.
+			}
+
 			Players.update(Session.get('playerId'), {$set: { position: pos }, $push: {route: pos } });
 
 		}, error, {enableHighAccuracy:true, maximumAge:5000, timeout:10000});
