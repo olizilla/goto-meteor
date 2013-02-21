@@ -141,7 +141,7 @@ function createMapMarker(player){
 
 function findMapMarker(id){
 	for (var i=0; i<map._layers.length; i++){
-		if (map.layers[i].playerId === id){
+		if (map._layers[i].playerId === id){
 			console.log('Found marker', map.layers[i]);
 			return map.layers[i];
 		}
