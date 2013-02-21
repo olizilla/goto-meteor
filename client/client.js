@@ -79,7 +79,9 @@ Template.gravatar.events({
 
 		if (email && email !== ''){
 			var hash = $.md5(email);
-			Players.update(Session.get('playerId'), { $set: { emailHash: hash }});
+			var name = /(.+)@/.exec(email)[1];
+
+			Players.update(Session.get('playerId'), { $set: { emailHash: hash, name: name }});
 			console.log('Updated players emailHash');
 		}
 	},
@@ -123,8 +125,9 @@ function createMapMarker(player){
 	}
 
 	var marker = L.marker([latitude, longitude], {
-		opacity: 0.8,
-		riseOnHover: true
+		opacity: 0.9,
+		riseOnHover: true,
+		title: player.name
 	});
 
 	if (player.emailHash){
@@ -132,7 +135,7 @@ function createMapMarker(player){
 			L.icon({
 				iconUrl: gravatarUrl(player.emailHash),
 				iconSize:[40, 40],
-				iconAnchor: [0, 0]
+				iconAnchor: [0, 0],
 			})
 		);
 	}
@@ -163,7 +166,7 @@ function findMapMarker(id){
 		console.log("Didn't find marker", id);
 	}
 	
-	return result
+	return result;
 }
 
 function removeMapMarkerIfExists(id){
