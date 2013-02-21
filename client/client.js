@@ -1,74 +1,10 @@
 /*
-Scenarios
-- First time this browser/user combo has gone to the site.
-*/
+ * GOTO: A Meteor based, collections-centric experiment in geolocation and watching people arrive.
+ */
 
 var map;
 
-var markers = new Meteor.Collection("markers"); // a client side record of all the markers on the map, keyed by playerId
-
-markers.find().observe({
-	removed:function(doc){ map.removeLayer(doc.marker); },
-	added:function(doc){ doc.marker.addTo(map); }
-});
-
-function initMap() {
-
-	map = L.map('map').setView([51.505, -0.09], 12);
-
-	L.tileLayer("http://{s}tile.stamen.com/toner/{z}/{x}/{y}.png", {
-		"minZoom":      0,
-		"maxZoom":      20,
-		"subdomains":   ["", "a.", "b.", "c.", "d."],
-		"scheme":       "xyz"
-	}).addTo(map);
-
-	return map;
-}
-
-function createMapMarker(coords, iconUrl){
-	
-	console.log(arguments);
-	
-	var longitude = coords.longitude;
-	var latitude = coords.latitude;
-
-	if (!latitude || !longitude){
-		return false;
-	}
-
-	var latLng = [latitude, longitude];
-
-	return L.marker(latLng, {
-		icon: L.icon({
-			iconUrl: iconUrl,
-			iconSize:[40, 40]
-
-		})
-	});
-}
-
-function retrieveOrCreatePlayerId(){
-
-	var playerId = window.localStorage['playerId'];
-	
-	// Never seen you before
-	if (!playerId){
-		playerId = Players.insert({});
-		window.localStorage['playerId'] = playerId;
-	} else {
-		// Are you in the db yet?
-		var player = Players.findOne(playerId);
-		if (!player){
-			console.log('No player found, db probably got wiped, recreating now.');
-			Players.insert({ _id: playerId });
-		}
-	}
-
-	Session.set('playerId', playerId);
-
-	console.log('Player', playerId);
-}
+var markers = new Meteor.Collection(null); // a client side record of all the markers on the map, keyed by playerId
 
 /*
  * Meteor.startup "will run as soon as the DOM is ready and any <body> templates from your .html files have been put on the screen."
@@ -76,39 +12,74 @@ function retrieveOrCreatePlayerId(){
  */
 Meteor.startup(function () {
 
-	retrieveOrCreatePlayerId();
-
 	initMap();
 
-	startWatchingGeolocation();
+	// Set up the current user once the Players collection is ready.
+	Meteor.subscribe('allplayers', function(){
+		console.log('Players ready!', Players);
+		
+		retrieveOrCreatePlayer();
+		
+		startWatchingGeolocation();
+	});
 
-	// Run a function and rerun it whenever its dependencies change.
-	Meteor.autorun(function(){
+	// Keep the markers on the map in sync with the markers collection
+	markers.find({}).observe({
 
-		console.log('Startup autorun');
+		added:function(doc){
+			console.log('Marker added', doc);
+			doc.addTo(map);
+		},
 
-		markers.remove({}); // Kill them all
+		changed:function(newDoc, index, oldDoc){
+			console.log('Marker changed', newDoc, oldDoc);
+			map.removeLayer(oldDoc);
+			newDoc.addTo(map);
+		},
 
-		Players.find().forEach(function(player){
+		removed:function(doc){
+			console.log('Marker removed', doc);
+			map.removeLayer(doc);
+		}
+	});
+
+	// Keep the local markers collection in sync with the players
+	Players.find({}).observe({
+
+		added:function(player){
 			
-			console.log(player);
+			console.log('Player added', player);
 
-			if (!player || !player.position || !player.position.coords || !player.position.coords.latitude || !map){
-				return false;
-			}
+			var marker = createMapMarker(player);
 
-			var coords = player.position.coords;
+			marker._id = player._id;
+			markers.insert(marker);
 
-			var marker = createMapMarker(coords, gravatarUrl(player.emailHash));
+			// markers.insert({_id: player._id, marker: marker});
+		},
 
-			markers.insert({_id: player._id, marker: marker});
+		changed: function(player){
+			console.log('Player changed', player);
 
-			if (player._id === getCurrentUser()._id) {
-				map.panTo([coords.latitude, coords.longitude]);
-			}
-		});
+			markers.remove({_id: player._id});
+
+			var marker = createMapMarker(player);
+			marker._id = player._id;
+			
+			markers.insert(marker);
+
+			// markers.update({_id: player._id}, { $set: {marker: marker}});
+		},
+
+		removed:function(player){
+			console.log('Player removed', player);
+
+			markers.remove({_id: player._id});
+		}
 	});
 });
+
+// ---- Templates -------------------------------------------------------------
 
 // Try and get a gravatar Url
 Template.gravatar.url = function(){
@@ -139,6 +110,69 @@ Template.gravatar.events({
 	}
 });
 
+// ---- Helpers ---------------------------------------------------------------
+
+function initMap() {
+
+	map = L.map('map').setView([51.505, -0.09], 12);
+
+	L.tileLayer("http://{s}tile.stamen.com/toner/{z}/{x}/{y}.png", {
+		"minZoom":      0,
+		"maxZoom":      20,
+		"subdomains":   ["", "a.", "b.", "c.", "d."],
+		"scheme":       "xyz"
+	}).addTo(map);
+
+	return map;
+}
+
+function createMapMarker(player){
+
+	if (!player || !player.position || !player.position.coords){
+		return false;
+	}
+	var coords = player.position.coords;
+	var longitude = coords.longitude;
+	var latitude = coords.latitude;
+
+	if (!latitude || !longitude){
+		return false;
+	}
+
+	var icon = gravatarUrl(player.emailHash);
+
+	return L.marker([latitude, longitude], {
+		icon: L.icon({
+			iconUrl: icon,
+			iconSize:[40, 40]
+		})
+	});
+}
+
+function retrieveOrCreatePlayer(){
+
+	var playerId = window.localStorage['playerId'];
+	
+	// Never seen you before
+	if (!playerId){
+		playerId = Players.insert({ emailHash: null });
+		window.localStorage['playerId'] = playerId;
+	} else {
+		var player = Players.findOne({_id: playerId});
+		// Are you still in the db?
+		if (!player){
+			console.log('Player not found, db probably got wiped, recreating now.');
+			Players.insert({ _id: playerId, emailHash: null });
+		}
+	}
+
+	Session.set('playerId', playerId);
+
+	console.log('PlayerId', playerId);
+
+	return playerId;
+}
+
 function getCurrentUser() {
 	return Players.findOne(Session.get('playerId'));
 }
@@ -150,17 +184,19 @@ function gravatarUrl(hash) {
 function startWatchingGeolocation(){
 	if (navigator.geolocation) {
 		navigator.geolocation.watchPosition(function(pos){
-			console.log('Current Position', pos);
+			console.log('Got Position', pos);
 
 			pos = $.extend(true, {}, pos); // Fix FF error 'Cannot modify properties of a WrappedNative'
 
-			if (!pos.coords.latitude || pos.coords.longitude){
+			if (!pos.coords.latitude || !pos.coords.longitude){
+				console.warn("Position doesn't have lat/lng. Ignoring", pos);
 				return; // we don't want yer lousy geolocation anyway.
 			}
 
 			Players.update(Session.get('playerId'), {$set: { position: pos }, $push: {route: pos } });
 
 		}, error, {enableHighAccuracy:true, maximumAge:5000, timeout:10000});
+
 	} else {
 		error('geolocation not supported');
 	}
