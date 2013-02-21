@@ -3,6 +3,8 @@
 
 GOTO: A Meteor based, collections-centric experiment in geolocation and watching people arrive.
 
+![GOTO Screenshot](https://raw.github.com/olizilla/goto-meteor/master/public/docs/goto-screenshot.png)
+
 http://goto.meteor.com
 
 ## Meteor for the impatient
