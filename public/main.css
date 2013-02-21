@@ -9,6 +9,9 @@ html, body, #map {
 	padding: 0;
 	margin:0;
 }
+.navbar .brand {
+	float: right;
+}
 .navbar .gravatar {
 	width:40px;
 	height:40px;
