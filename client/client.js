@@ -97,16 +97,22 @@ Template.gravatar.url = function(){
 // Hash the email and store the result
 Template.gravatar.events({
 
-	'click .save' : function (event, template) {
+	'click .save' : function(event, template){
 
 		var email = template.find('.email').value;
 
 		if (email && email !== ''){
 			var hash = $.md5(email);
 			Players.update(Session.get('playerId'), { $set: { emailHash: hash }});
+			console.log('Updated players emailHash');
 		}
+	},
 
-		console.log(Players.findOne(Session.get('playerId')));
+	'click .gravatar': function(event, template){
+
+		Players.update(Session.get('playerId'), { $set: { emailHash: null }});
+
+		console.log('Deleted players emailHash');
 	}
 });
 
