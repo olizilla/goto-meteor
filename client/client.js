@@ -74,16 +74,8 @@ Template.gravatar.url = function(){
 Template.gravatar.events({
 
 	'click .save' : function(event, template){
-
 		var email = template.find('.email').value;
-
-		if (email && email !== ''){
-			var hash = $.md5(email);
-			var name = /(.+)@/.exec(email)[1];
-
-			Players.update(Session.get('playerId'), { $set: { emailHash: hash, name: name }});
-			console.log('Updated players emailHash');
-		}
+		updatePlayerEmail(email);
 	},
 
 	'click .gravatar': function(event, template){
@@ -91,6 +83,15 @@ Template.gravatar.events({
 		Players.update(Session.get('playerId'), { $set: { emailHash: null }});
 
 		console.log('Deleted players emailHash');
+	},
+
+	'keypress input': function(event, template){
+		if(event.which == 13) {
+			console.log(event);
+			event.preventDefault();
+            var email = template.find('.email').value;
+			updatePlayerEmail(email);
+        }
 	}
 });
 
@@ -198,6 +199,24 @@ function retrieveOrCreatePlayer(){
 	console.log('PlayerId', playerId);
 
 	return playerId;
+}
+
+function updatePlayerEmail(email){
+	var nameRegex = /(.+)@/;
+	
+	if (nameRegex.test(email)){
+		
+		var name = nameRegex.exec(email)[1];
+
+		var hash = $.md5(email);
+
+		Players.update(Session.get('playerId'), { $set: { emailHash: hash, name: name }});
+		
+		console.log('Updated players emailHash');
+
+	} else {
+		console.log("Bad email address", email);
+	}
 }
 
 function getCurrentUser() {
