@@ -1,12 +1,7 @@
-body{
-	/*font-family: "Amatic SC",Futura,Helvetica,arial,freesans,clean,sans-serif;*/
-    color: #222;
-}
-html {
-	background-color:#faf0e6;
-}
 body {
-	min-width: 870px;
+	overflow: hidden;
+	background-color:#000;
+	color: #222;
 }
 html, body, #map {
 	width: 100%;
@@ -18,7 +13,11 @@ html, body, #map {
 	width:40px;
 	height:40px;
 }
-.leaflet-control-zoom {
+.navbar-fixed-top, .navbar-fixed-bottom, .navbar-static-top{ /* override bootstrap responsive */
+	margin-left: 0;
+	margin-right:0;
+}
+.leaflet-container .leaflet-control-zoom {
 	margin-top: 50px;
 }
 .navbar-fixed-top {

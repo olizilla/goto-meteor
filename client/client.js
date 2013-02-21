@@ -96,7 +96,8 @@ Template.gravatar.events({
 
 function initMap() {
 
-	map = L.map('map').setView([51.505, -0.09], 12);
+	// map = L.map('map').setView([51.505, -0.09], 12);
+	map = L.map('map').setView([20,0], 2);
 
 	L.tileLayer("http://{s}tile.stamen.com/toner/{z}/{x}/{y}.png", {
 		"minZoom":      0,
@@ -126,7 +127,8 @@ function createMapMarker(player){
 	var marker = L.marker([latitude, longitude], {
 		icon: L.icon({
 			iconUrl: icon,
-			iconSize:[40, 40]
+			iconSize:[40, 40],
+			iconAnchor: [0, 0],
 		})
 	});
 	
@@ -200,7 +202,13 @@ function startWatchingGeolocation(){
 
 			Players.update(Session.get('playerId'), {$set: { position: pos }, $push: {route: pos } });
 
-		}, error, {enableHighAccuracy:true, maximumAge:5000, timeout:10000});
+			if (!this.hasCenteredMap){
+				var zoom = 11;
+				map.setView([pos.coords.latitude, pos.coords.longitude], zoom);
+				this.hasCenteredMap = true;
+			}
+
+		}, error, {enableHighAccuracy:false, maximumAge:60000, timeout:100000});
 
 	} else {
 		error('geolocation not supported');
