@@ -4,8 +4,6 @@
 
 var map;
 
-var markers = new Meteor.Collection(null); // a client side record of all the markers on the map, keyed by playerId
-
 /*
  * Meteor.startup "will run as soon as the DOM is ready and any <body> templates from your .html files have been put on the screen."
  * http://docs.meteor.com/#meteor_startup
@@ -23,58 +21,36 @@ Meteor.startup(function () {
 		startWatchingGeolocation();
 	});
 
-	// Keep the markers on the map in sync with the markers collection
-	markers.find({}).observe({
-
-		added:function(doc){
-			console.log('Marker added', doc);
-			doc.addTo(map);
-		},
-
-		changed:function(newDoc, index, oldDoc){
-			console.log('Marker changed', newDoc, oldDoc);
-			map.removeLayer(oldDoc);
-			newDoc.addTo(map);
-		},
-
-		removed:function(doc){
-			console.log('Marker removed', doc);
-			map.removeLayer(doc);
-		}
-	});
-
 	// Keep the local markers collection in sync with the players
 	Players.find({}).observe({
 
-		added:function(player){
+		added:function(newPlayer){
 			
-			console.log('Player added', player);
+			console.log('Player added', newPlayer);
 
-			var marker = createMapMarker(player);
-
-			marker._id = player._id;
-			markers.insert(marker);
-
-			// markers.insert({_id: player._id, marker: marker});
+			var marker = createMapMarker(newPlayer);
+			
+			if (marker){
+				marker.addTo(map);
+			}
 		},
 
-		changed: function(player){
-			console.log('Player changed', player);
+		changed: function(oldPlayer, index, newPlayer){
+			console.log('Player changed', oldPlayer, newPlayer);
 
-			markers.remove({_id: player._id});
+			removeMapMarkerIfExists(oldPlayer._id);
 
-			var marker = createMapMarker(player);
-			marker._id = player._id;
+			var marker = createMapMarker(newPlayer);
 			
-			markers.insert(marker);
-
-			// markers.update({_id: player._id}, { $set: {marker: marker}});
+			if (marker){
+				marker.addTo(map);
+			}
 		},
 
-		removed:function(player){
-			console.log('Player removed', player);
+		removed:function(oldPlayer){
+			console.log('Player removed', oldPlayer);
 
-			markers.remove({_id: player._id});
+			removeMapMarkerIfExists(oldPlayer._id);
 		}
 	});
 });
@@ -147,12 +123,35 @@ function createMapMarker(player){
 
 	var icon = gravatarUrl(player.emailHash);
 
-	return L.marker([latitude, longitude], {
+	var marker = L.marker([latitude, longitude], {
 		icon: L.icon({
 			iconUrl: icon,
 			iconSize:[40, 40]
 		})
 	});
+	
+	marker.playerId = player._id;
+
+	console.log('Created marker', marker);
+
+	return marker;
+}
+
+function findMapMarker(id){
+	for (var i=0; i<map._layers.length; i++){
+		if (map.layers[i].playerId === id){
+			console.log('Found marker', map.layers[i]);
+			return map.layers[i];
+		}
+	}
+	console.log("Didn't find marker", id);
+}
+
+function removeMapMarkerIfExists(id){
+	var marker = findMapMarker(id);
+	if(marker){
+		map.removeLayer(marker);
+	}
 }
 
 function retrieveOrCreatePlayer(){
