@@ -122,16 +122,21 @@ function createMapMarker(player){
 		return false;
 	}
 
-	var icon = gravatarUrl(player.emailHash);
-
 	var marker = L.marker([latitude, longitude], {
-		icon: L.icon({
-			iconUrl: icon,
-			iconSize:[40, 40],
-			iconAnchor: [0, 0],
-		})
+		opacity: 0.8,
+		riseOnHover: true
 	});
-	
+
+	if (player.emailHash){
+		marker.setIcon(
+			L.icon({
+				iconUrl: gravatarUrl(player.emailHash),
+				iconSize:[40, 40],
+				iconAnchor: [0, 0]
+			})
+		);
+	}
+
 	marker.playerId = player._id;
 
 	console.log('Created marker', marker);
@@ -140,13 +145,25 @@ function createMapMarker(player){
 }
 
 function findMapMarker(id){
-	for (var i=0; i<map._layers.length; i++){
-		if (map._layers[i].playerId === id){
-			console.log('Found marker', map.layers[i]);
-			return map.layers[i];
+	var result = null;
+
+	$.each(map._layers, function(index, layer){
+		
+		if (layer.playerId === id){
+
+			console.log('Found marker', layer);
+
+			result = layer;
+
+			return false;
 		}
+	});
+	
+	if (!result){
+		console.log("Didn't find marker", id);
 	}
-	console.log("Didn't find marker", id);
+	
+	return result
 }
 
 function removeMapMarkerIfExists(id){
