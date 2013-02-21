@@ -24,9 +24,9 @@ html, body {
 #map .leaflet-control-zoom{
 	margin-top: 50px;
 }
-#map .leaflet-marker-icon{
+/*#map .leaflet-marker-icon{
 	  -webkit-transform: rotateX( 45deg );
          -moz-transform: rotateX( 45deg );
            -o-transform: rotateX( 45deg );
               transform: rotateX( 45deg );
-}
+}*/
