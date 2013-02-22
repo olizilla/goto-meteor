@@ -10,16 +10,35 @@
 <![endif]-->
 <link rel="stylesheet" href="main.css">
 <script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/js/bootstrap.min.js"></script>
 </head>
 
 <body>
 	<nav class="navbar navbar-inverse navbar-fixed-top">
 		<div class="navbar-inner">
-			<a class="brand" href="/">goto.meteor.com</a>
+			<a class="brand" title="About..." href="#about" data-toggle="modal">goto.meteor.com</a>
 			{{> gravatar }}
 		</div>
 	</nav>
 	<div id="map"></div>
+
+	<div id="about" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3 id="myModalLabel">About goto.meteor.com</h3>
+		</div>
+		<div class="modal-body">
+			<p>Goto is <strong>a live map showing where you and everyone else is</strong>. Use it to figure out a mutually convenient spot to host a meet-up or just sit watch to see if your friends are on the way.
+			</p>
+			<p><strong>Accept the geolocation request and you'll get a pin on the map.</strong> If you're using a mobile with GPS, then your position will update live for all to see. Don't worry, it's opt-in. You browser will only send position reports while you're looking at the page.
+			</p>
+			<p>If you've got a <a href="http://en.gravatar.com/">gravatar</a>, then add your email address and you'll get a better pin. <strong>You're email isn't shared or stored, so go for it.</strong>
+			</p>
+		</div>
+		<div class="modal-footer">
+			<p>Built on <a href="http://meteor.com/">Meteor</a> by <a href="https://twitter.com/olizilla">@olizilla</a> for <a href="http://www.meetup.com/Meteor-London/events/103404762/">Meteor London</a>, Feb 2013.
+		</div>
+	</div>
 </body>
 
 <template name="gravatar">
@@ -31,4 +50,8 @@
 		<a href="#" class="btn btn-primary save">Go</a>
 	</form>
 	{{/if}}
+</template>
+
+<template name="welcome">
+
 </template>

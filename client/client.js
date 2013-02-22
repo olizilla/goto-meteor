@@ -182,6 +182,7 @@ function retrieveOrCreatePlayer(){
 	if (!playerId){
 		playerId = Players.insert({ emailHash: null });
 		window.localStorage['playerId'] = playerId;
+		$('#about').modal('show');
 	} else {
 		var player = Players.findOne({_id: playerId});
 		// Are you still in the db?
