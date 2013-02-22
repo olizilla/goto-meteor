@@ -22,3 +22,4 @@ Put CSS & JS resources for the client in a dir called client. If you don't then 
 - Template methods used in the template, like grabbing the src for a gravatar url based on the current user, are called before
 - Collections take some time to get populated. Add an explicit subscribe onComplete handler to only run code once the Collection is ready.
 - Empty objects are removed from Collections. myCollection.insert({}) will insert succedfully and return an _id, but the object will immedietly be removed:https://github.com/meteor/meteor/issues/308
+- `Players.remove({position: undefined});` removed everyone while `Players.find({position: undefined}).fetch();` pulled the list of records that had no position. SUPRISE! I DELETE ALL URE DATAZ... Thanks mongo. 
