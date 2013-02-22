@@ -133,7 +133,6 @@ function createMapMarker(player){
 			L.icon({
 				iconUrl: gravatarUrl(player.emailHash),
 				iconSize:[40, 40],
-				iconAnchor: [0, 0]
 			})
 		);
 	}
@@ -226,7 +225,7 @@ function getCurrentUser() {
 }
 
 function gravatarUrl(hash) {
-	return 'http://www.gravatar.com/avatar/' + hash + '?d=mm';
+	return 'http://www.gravatar.com/avatar/' + hash + '?s=40&d=mm';
 }
 
 function startWatchingGeolocation(){
