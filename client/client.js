@@ -190,6 +190,10 @@ function retrieveOrCreatePlayer(){
 			console.log('Player not found, db probably got wiped, recreating now.');
 			Players.insert({ _id: playerId, emailHash: null });
 		}
+
+		if(!player.emailHash || !player.position){
+			$('#about').modal('show');
+		}
 	}
 
 	Session.set('playerId', playerId);
