@@ -26,10 +26,7 @@ html, body, #map {
 .navbar-fixed-top {
 	margin-bottom: 0;
 }
-
-/*#map .leaflet-marker-icon{
-	  -webkit-transform: rotateX( 45deg );
-         -moz-transform: rotateX( 45deg );
-           -o-transform: rotateX( 45deg );
-              transform: rotateX( 45deg );
-}*/
+.email,
+.leaflet-container .leaflet-control-zoom {
+	margin-left: 4px;
+}
