@@ -19,6 +19,10 @@ html, body, #map {
 .navbar-fixed-top, .navbar-fixed-bottom, .navbar-static-top{ /* override bootstrap responsive */
 	margin-left: 0;
 	margin-right:0;
+	box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
+}
+.navbar-inverse .navbar-inner{
+	border-color: #AAA;
 }
 .leaflet-container .leaflet-control-zoom {
 	margin-top: 50px;
