@@ -3,11 +3,11 @@
 
 GOTO: A Meteor based, collections-centric experiment in geolocation and watching people arrive.
 
+For the [Meteor London](http://www.meetup.com/Meteor-London/) gang...
+
 ![GOTO Screenshot](https://raw.github.com/olizilla/goto-meteor/master/public/docs/goto-screenshot-2.png)
 
 http://goto.meteor.com 
-
-For the [Meteor London](http://www.meetup.com/Meteor-London/) gang...
 
 ## Meteor for the impatient
 

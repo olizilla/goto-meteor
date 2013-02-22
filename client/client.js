@@ -14,7 +14,7 @@ Meteor.startup(function () {
 
 	// Set up the current user once the Players collection is ready.
 	Meteor.subscribe('allplayers', function(){
-		console.log('Players ready!', Players);
+		// console.log('Players ready!', Players);
 		
 		retrieveOrCreatePlayer();
 		
@@ -35,7 +35,7 @@ Meteor.startup(function () {
 			}
 		},
 
-		changed: function(oldPlayer, index, newPlayer){
+		changed: function(newPlayer, oldPlayer){
 			console.log('Player changed', oldPlayer, newPlayer);
 
 			removeMapMarkerIfExists(oldPlayer._id);
@@ -61,7 +61,7 @@ Meteor.startup(function () {
 Template.gravatar.url = function(){
 	var player = Players.findOne(Session.get('playerId'));
 	
-	console.log('Template gravatar.url called', player);
+	// console.log('Template gravatar.url called', player);
 	
 	if (!player || !player.emailHash){
 		return false;// don't return null, always return a default or you get errors.
@@ -79,15 +79,13 @@ Template.gravatar.events({
 	},
 
 	'click .gravatar': function(event, template){
-
 		Players.update(Session.get('playerId'), { $set: { emailHash: null }});
-
-		console.log('Deleted players emailHash');
+		// console.log('Deleted players emailHash');
 	},
 
 	'keypress input': function(event, template){
 		if(event.which == 13) {
-			console.log(event);
+			// console.log(event);
 			event.preventDefault();
             var email = template.find('.email').value;
 			updatePlayerEmail(email);
@@ -99,7 +97,6 @@ Template.gravatar.events({
 
 function initMap() {
 
-	// map = L.map('map').setView([51.505, -0.09], 12);
 	map = L.map('map').setView([20,0], 2);
 
 	L.tileLayer("http://{s}tile.stamen.com/toner/{z}/{x}/{y}.png", {
@@ -136,14 +133,14 @@ function createMapMarker(player){
 			L.icon({
 				iconUrl: gravatarUrl(player.emailHash),
 				iconSize:[40, 40],
-				iconAnchor: [0, 0],
+				iconAnchor: [0, 0]
 			})
 		);
 	}
 
 	marker.playerId = player._id;
 
-	console.log('Created marker', marker);
+	// console.log('Created marker', marker);
 
 	return marker;
 }
@@ -155,7 +152,7 @@ function findMapMarker(id){
 		
 		if (layer.playerId === id){
 
-			console.log('Found marker', layer);
+			// console.log('Found marker', layer);
 
 			result = layer;
 
@@ -212,7 +209,7 @@ function updatePlayerEmail(email){
 
 		Players.update(Session.get('playerId'), { $set: { emailHash: hash, name: name }});
 		
-		console.log('Updated players emailHash');
+		// console.log('Updated players emailHash');
 
 	} else {
 		console.log("Bad email address", email);
@@ -230,7 +227,7 @@ function gravatarUrl(hash) {
 function startWatchingGeolocation(){
 	if (navigator.geolocation) {
 		navigator.geolocation.watchPosition(function(pos){
-			console.log('Got Position', pos);
+			// console.log('Got Position', pos);
 
 			pos = $.extend(true, {}, pos); // Fix FF error 'Cannot modify properties of a WrappedNative'
 
@@ -239,7 +236,7 @@ function startWatchingGeolocation(){
 				return; // we don't want yer lousy geolocation anyway.
 			}
 
-			Players.update(Session.get('playerId'), {$set: { position: pos }, $push: {route: pos } });
+			Players.update(Session.get('playerId'), { $set: { position: pos } });
 
 			if (!this.hasCenteredMap){
 				var zoom = 11;
