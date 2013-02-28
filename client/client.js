@@ -3,6 +3,7 @@
  */
 
 var map;
+var clusterGroup;
 
 /*
  * Meteor.startup "will run as soon as the DOM is ready and any <body> templates from your .html files have been put on the screen."
@@ -11,6 +12,7 @@ var map;
 Meteor.startup(function () {
 
 	initMap();
+	initMarkerClusterGroup(map);
 
 	// Set up the current user once the Players collection is ready.
 	Meteor.subscribe('allplayers', function(){
@@ -28,29 +30,29 @@ Meteor.startup(function () {
 			
 			console.log('Player added', newPlayer);
 
-			var marker = createMapMarker(newPlayer);
+			var marker = createMarker(newPlayer);
 			
 			if (marker){
-				marker.addTo(map);
+				marker.addTo(clusterGroup);
 			}
 		},
 
 		changed: function(newPlayer, oldPlayer){
 			console.log('Player changed', oldPlayer, newPlayer);
 
-			removeMapMarkerIfExists(oldPlayer._id);
+			removeMarkerIfExists(oldPlayer._id);
 
-			var marker = createMapMarker(newPlayer);
+			var marker = createMarker(newPlayer);
 			
 			if (marker){
-				marker.addTo(map);
+				marker.addTo(clusterGroup);
 			}
 		},
 
 		removed:function(oldPlayer){
 			console.log('Player removed', oldPlayer);
 
-			removeMapMarkerIfExists(oldPlayer._id);
+			removeMarkerIfExists(oldPlayer._id);
 		}
 	});
 });
@@ -109,7 +111,22 @@ function initMap() {
 	return map;
 }
 
-function createMapMarker(player){
+/**
+ * Create the cluster group layer and add it to the provided map.
+ * 
+ * @param map
+ * @return {L.MarkerClusterGroup}
+ */
+function initMarkerClusterGroup(map) {
+	
+	clusterGroup = new L.MarkerClusterGroup();
+	
+	map.addLayer(clusterGroup);
+	
+	return clusterGroup;
+}
+
+function createMarker(player){
 
 	if (!player || !player.position || !player.position.coords){
 		return false;
@@ -132,7 +149,7 @@ function createMapMarker(player){
 		marker.setIcon(
 			L.icon({
 				iconUrl: gravatarUrl(player.emailHash),
-				iconSize:[40, 40],
+				iconSize:[40, 40]
 			})
 		);
 	}
@@ -144,19 +161,32 @@ function createMapMarker(player){
 	return marker;
 }
 
-function findMapMarker(id){
+function findMarker(id){
 	var result = null;
-
-	$.each(map._layers, function(index, layer){
+	
+	$.each(clusterGroup._layers, function(index, layer) {
 		
-		if (layer.playerId === id){
-
-			// console.log('Found marker', layer);
-
+		// This could be a marker, or a cluster
+		if(layer.playerId === id) {
+			
 			result = layer;
-
-			return false;
+			
+		} else if(layer._markers) {
+			
+			$.each(layer._markers, function(index, marker) {
+				
+				if (marker.playerId === id){
+		
+					// console.log('Found marker', layer);
+		
+					result = marker;
+		
+					return false;
+				}
+			});
 		}
+		
+		if(result) return false;
 	});
 	
 	if (!result){
@@ -166,10 +196,10 @@ function findMapMarker(id){
 	return result;
 }
 
-function removeMapMarkerIfExists(id){
-	var marker = findMapMarker(id);
+function removeMarkerIfExists(id){
+	var marker = findMarker(id);
 	if(marker){
-		map.removeLayer(marker);
+		clusterGroup.removeLayer(marker);
 	}
 }
 
@@ -190,7 +220,7 @@ function retrieveOrCreatePlayer(){
 			Players.insert({ _id: playerId, emailHash: null });
 		}
 
-		if(!player.emailHash || !player.position){
+		if(!player || !player.emailHash || !player.position){
 			$('#about').modal('show');
 		}
 	}
