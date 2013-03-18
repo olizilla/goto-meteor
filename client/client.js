@@ -99,7 +99,17 @@ Template.gravatar.events({
 
 function initMap() {
 
-	map = L.map('map').setView([20,0], 2);
+	var center = [20,0];
+	var zoom = 2;
+
+	if(Meteor.settings && Meteor.settings.public && Meteor.settings.public.center){
+		settings = Meteor.settings.public.center;
+
+		center = [settings.lat, settings.lng];
+		zoom = settings.zoom;
+	}
+
+	map = L.map('map').setView(center, zoom);
 
 	L.tileLayer("http://{s}tile.stamen.com/toner/{z}/{x}/{y}.png", {
 		"minZoom":      0,

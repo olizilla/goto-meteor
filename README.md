@@ -9,6 +9,8 @@ For the [Meteor London](http://www.meetup.com/Meteor-London/) gang...
 
 http://goto.meteor.com 
 
+Meteor.settings.public.center = "{"lat":51.50532341149335,"lng":-0.186767578125,"zoom":10}"
+
 ## Meteor for the impatient
 
 You can dump css files into the project and they automagically appear in the head in the rendered html. 
