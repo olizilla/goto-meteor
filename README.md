@@ -9,15 +9,41 @@ For the [Meteor London](http://www.meetup.com/Meteor-London/) gang...
 
 http://goto.meteor.com 
 
+
 Meteor.settings.public.center = "{"lat":51.50532341149335,"lng":-0.186767578125,"zoom":10}"
 
-## Meteor for the impatient
+# Meteor for the impatient
 
 You can dump css files into the project and they automagically appear in the head in the rendered html. 
 They are added in alphabetical order, and files in subdirectories are added before files in in the root. The deeper in the tree the earlier it loads.
 So for example we could be super-louche and create a libs dir for all third party css & js... I dumped normalise.js in there and boom. it's loaded.
 
 Put CSS & JS resources for the client in a dir called client. If you don't then your js libs will be processed on the server where there is no window object and cause an error. If you do, then all your libs and css will be automagically included in the head of your rendered html. The resrouces are automagically served with version info and cache headers for you dont have to think.
+
+## Deploying to meteor.com
+
+	meteor deploy [sitename] --password
+
+Will prompt you to choose a password, bundle up your app and deploy it to `sitename.meteor.com`
+
+The hosting is currently a freebee, and while they work out a fulll auth system, it's just password protected at the moment. If you leave off the `--password` then anyone can overwrite your app. If you just want a quick throw away test then that might be what you want.
+
+	meteor deploy [sitename] --password --settings [settings.json]
+
+Will create a `Meteor.settings` property that allows you to pass secrets and config to your app at deploy time.
+If you add a `public` property to that json object, then the properties for the public object will be available on the client too.
+
+```json
+{
+	"public":{
+		"center":{
+			"lat":51.50532341149335,
+			"lng":-0.186767578125,
+			"zoom":10
+		}
+	}
+}
+```
 
 ## Gotchas that got me
 
