@@ -1,0 +1,24 @@
+/*
+ * Create a new Target
+ *
+ * A User creates a target by dropping a pin on the map.
+ * A User is on target when their url matches /target/:id
+ *   - Show only the players also on that target
+ *   - 
+ */
+
+var targetId = findTargetId();
+
+Targets.find(targetID)
+
+function findTargetId(){
+	// Find targetId on url	
+}
+
+aTarget = {
+	_id: 'xyz1234abc',
+	latlng: [0,0],
+	createdBy: 'userid',
+	createdDate: '20130101T10:15:00'
+}
+

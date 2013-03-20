@@ -33,7 +33,7 @@ Meteor.startup(function () {
 			var marker = createMarker(newPlayer);
 			
 			if (marker){
-				marker.addTo(clusterGroup);
+				clusterGroup.addLayer(marker);
 			}
 		},
 
@@ -45,7 +45,8 @@ Meteor.startup(function () {
 			var marker = createMarker(newPlayer);
 			
 			if (marker){
-				marker.addTo(clusterGroup);
+				// marker.addTo(clusterGroup);
+				clusterGroup.addLayer(marker);
 			}
 		},
 
@@ -80,12 +81,23 @@ Template.gravatar.events({
 		updatePlayerEmail(email);
 	},
 
-	'click .gravatar': function(event, template){
-		Players.update(Session.get('playerId'), { $set: { emailHash: null }});
-		// console.log('Deleted players emailHash');
+	'click .icon': function(event, template){
+		user = getCurrentUser();
+		marker = findMarker(user._id);
+		map.panTo(marker.getLatLng());
+		// map.setZoom(14);
+
+		// console.log('Updating geolocation');
+		// let the user force a new geolocation position request... possibly a bad idea...
+		// map.locate({setView:true});
 	},
 
-	'keypress input': function(event, template){
+	'click .edit': function(event, template){
+		Players.update(Session.get('playerId'), { $set: { emailHash: null }});
+		// console.log('Deleted players emailHash');
+	},	
+
+	'keypress #email': function(event, template){
 		if(event.which == 13) {
 			// console.log(event);
 			event.preventDefault();
@@ -129,7 +141,10 @@ function initMap() {
  */
 function initMarkerClusterGroup(map) {
 	
-	clusterGroup = new L.MarkerClusterGroup();
+	clusterGroup = new L.MarkerClusterGroup({
+		animateAddingMarkers:true,
+		maxClusterRadius:2
+	});
 	
 	map.addLayer(clusterGroup);
 	
@@ -141,6 +156,7 @@ function createMarker(player){
 	if (!player || !player.position || !player.position.coords){
 		return false;
 	}
+
 	var coords = player.position.coords;
 	var longitude = coords.longitude;
 	var latitude = coords.latitude;
@@ -173,30 +189,13 @@ function createMarker(player){
 
 function findMarker(id){
 	var result = null;
-	
-	$.each(clusterGroup._layers, function(index, layer) {
-		
-		// This could be a marker, or a cluster
+
+	clusterGroup.eachLayer(function(layer){
+		console.log("Layer", layer);
 		if(layer.playerId === id) {
-			
 			result = layer;
-			
-		} else if(layer._markers) {
-			
-			$.each(layer._markers, function(index, marker) {
-				
-				if (marker.playerId === id){
-		
-					// console.log('Found marker', layer);
-		
-					result = marker;
-		
-					return false;
-				}
-			});
 		}
-		
-		if(result) return false;
+
 	});
 	
 	if (!result){
@@ -270,20 +269,33 @@ function gravatarUrl(hash) {
 
 function startWatchingGeolocation(){
 	if (navigator.geolocation) {
-		navigator.geolocation.watchPosition(function(pos){
+		navigator.geolocation.watchPosition(function(p){
 			// console.log('Got Position', pos);
 
-			pos = $.extend(true, {}, pos); // Fix FF error 'Cannot modify properties of a WrappedNative'
-
-			if (!pos.coords.latitude || !pos.coords.longitude){
+			if (!p.coords.latitude || !p.coords.longitude){
 				console.warn("Position doesn't have lat/lng. Ignoring", pos);
 				return; // we don't want yer lousy geolocation anyway.
 			}
 
+			var pos = {
+				timestamp: p.timestamp,
+				coords: {
+					latitude: p.coords.latitude,
+					longitude: p.coords.longitude,
+					accuracy: p.coords.accuracy,
+					heading: p.coords.heading,
+					speed: p.coords.speed,
+					altitude: p.coords.altitude,
+					altitudeAccuracy: p.coords.altitudeAccuracy
+				}
+			}
+
+			// $.extend(true, {}, pos); // Fix FF error 'Cannot modify properties of a WrappedNative'
+
 			Players.update(Session.get('playerId'), { $set: { position: pos } });
 
 			if (!this.hasCenteredMap){
-				var zoom = 11;
+				var zoom = 16;
 				map.setView([pos.coords.latitude, pos.coords.longitude], zoom);
 				this.hasCenteredMap = true;
 			}

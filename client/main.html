@@ -17,7 +17,7 @@
 <body>
 	<nav class="navbar navbar-inverse navbar-fixed-top">
 		<div class="navbar-inner">
-			<a class="brand" title="About..." href="#about" data-toggle="modal">goto.meteor.com</a>
+			<a class="about brand" title="About GOTO" href="#about" data-toggle="modal">GOTO</a>
 			{{> gravatar }}
 		</div>
 	</nav>
@@ -37,22 +37,21 @@
 			</p>
 		</div>
 		<div class="modal-footer">
-			<p>Built on <a href="http://meteor.com/">Meteor</a> by <a href="https://twitter.com/olizilla">@olizilla</a> for <a href="http://www.meetup.com/Meteor-London/events/103404762/">Meteor London</a>, Feb 2013.
+			<p><a href="https://github.com/olizilla/goto-meteor">Built</a> on <a href="http://meteor.com/">Meteor</a> by <a href="https://twitter.com/olizilla">@olizilla</a> for <a href="http://www.meetup.com/Meteor-London/events/103404762/">Meteor London</a>, Feb 2013.
 		</div>
 	</div>
 </body>
 
 <template name="gravatar">
 	{{#if url}}
-		<img class="gravatar" src="{{url}}" title="Click to change">
+	<img class="gravatar icon" src="{{url}}" title="Center map on your current location" />
+	<a href="#" title="Change your gravatar" class="btn btn-link edit">Edit...</a>
 	{{else}}
+
 	<form class="navbar-form">
+		<img class="no-gravatar icon" src="http://cdn.leafletjs.com/leaflet-0.5.1/images/marker-icon.png" title="Center map on your current location" />
 		<input id="email" class="email" type="email" placeholder="Email" required />
 		<a href="#" class="btn btn-primary save">Go</a>
 	</form>
 	{{/if}}
-</template>
-
-<template name="welcome">
-
 </template>

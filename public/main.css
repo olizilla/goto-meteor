@@ -10,12 +10,44 @@ html, body, #map {
 	padding: 0;
 	margin:0;
 }
-.navbar .brand {
+.navbar .about {
 	float: right;
 }
-.navbar .gravatar {
-	width:40px;
+.navbar .edit{
+	color:#999980;
+	text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);
+	font-weight: 200;
+}
+.navbar .edit:hover{
+	color:#ddd;
+	text-decoration: none;
+}
+.navbar .edit {
+	opacity: 0;
+	margin-top: 0;
+	-webkit-transition:  opacity .5s;
+	   -moz-transition:  opacity .5s;
+	    -ie-transition:  opacity .5s;
+	     -o-transition:  opacity .5s;
+	        transition:  opacity .5s;
+}
+.navbar:hover .edit{
+	opacity: 0.9;
+}
+.navbar .gravatar,
+.navbar .no-gravatar
+{
 	height:40px;
+	cursor: pointer;
+}
+.navbar .gravatar:hover,
+.navbar .no-gravatar:hover
+{
+	background-color: #333;
+}
+.navbar .no-gravatar{
+	vertical-align: top;
+	padding: 0 10px;
 }
 .navbar-fixed-top, .navbar-fixed-bottom, .navbar-static-top{ /* override bootstrap responsive */
 	margin-left: 0;
@@ -30,8 +62,4 @@ html, body, #map {
 }
 .navbar-fixed-top {
 	margin-bottom: 0;
-}
-.email,
-.leaflet-container .leaflet-control-zoom {
-	margin-left: 4px;
 }
