@@ -84,8 +84,7 @@ Template.gravatar.events({
 	'click .icon': function(event, template){
 		user = getCurrentUser();
 		marker = findMarker(user._id);
-		map.panTo(marker.getLatLng());
-		// map.setZoom(14);
+		map.setView(marker.getLatLng(),16);
 
 		// console.log('Updating geolocation');
 		// let the user force a new geolocation position request... possibly a bad idea...
